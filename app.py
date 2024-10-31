@@ -2,8 +2,8 @@ from flask import Flask, request, render_template, redirect
 from pymysql import connect, err
 
 app = Flask(__name__,
-    template_folder='/templates',
-    static_folder='/static',
+    template_folder='templates',
+    static_folder='static',
     static_url_path=''
 )
 
