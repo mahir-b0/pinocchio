@@ -21,6 +21,14 @@ body {
     align-items: center;
 }
 
+#download-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 .prompt {
     margin-right: 0.5rem; 
 }
