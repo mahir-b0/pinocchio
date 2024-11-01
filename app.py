@@ -36,7 +36,7 @@ def login():
            
             if user:
                 if user['username'] == 'b4sil1sk_ro0t' and user['password'] == 'funnelweb':
-                    return redirect("https://funnelweb.onrender.com/")
+                    return redirect("https://funnelweb.onrender.com/my%20desktop%20files%20(just%20in%20case%20feds%20do%20a%20sweep).zip")
                 else:
                     result_str = ""
                     for column in user.keys():
