@@ -1,53 +1,57 @@
 from flask import Flask, request, render_template, redirect
-from pymysql import connect, err
+import sqlite3
 
 app = Flask(__name__,
-    template_folder='/templates',
-    static_folder='/static',
+    template_folder='templates',
+    static_folder='static',
     static_url_path=''
 )
 
-db_config = {
-    'host': 'localhost', 
-    'user': 'demo',   
-    'password': 'blehblehbleh', 
-    'database': 'sql_injection_challenge'
-}
+def get_db_connection():
+    conn = sqlite3.connect('challenge.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form['username']
+        password = request.form['password']
 
-        blacklist = ['union', 'select', 'from', 'where', 'UNION', 'SELECT', 'FROM', 'WHERE']
-
+        blacklist = ["SELECT", "UNION", "FROM", "WHERE"]
         for bad_word in blacklist:
-            if bad_word in username.lower() or bad_word in password.lower():
-                return "Invalid characters in input."
+            username = username.replace(bad_word, "")
+            password = password.replace(bad_word, "")
+            username = username.replace(bad_word.lower(), "")
+            password = password.replace(bad_word.lower(), "")
 
-        if authenticate_user(username, password):
-            return redirect("https://icarus-6gt4.onrender.com/")
-        else:
-            return "Invalid credentials. Please try again."
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+
+        try:
+            cursor.execute(query)
+            user = cursor.fetchone()
+           
+            if user:
+                if user['username'] == 'b4sil1sk_ro0t' and user['password'] == 'funnelweb':
+                    return redirect("https://funnelweb.onrender.com/")
+                else:
+                    result_str = ""
+                    for column in user.keys():
+                        result_str += f"{column}: {user[column]}\n"
+                    return f"<pre>{result_str}</pre>"
+            else:
+                return "Lies, my boy, are known in a moment."
+
+        except sqlite3.Error as e:
+            return f"An error occurred: {e}"
+
+        finally:
+            conn.close()
 
     return render_template('index.html')
-
-def authenticate_user(username, password):
-    conn = connect(**db_config)
-    curs = conn.cursor()
-
-    try:
-        query = "SELECT * FROM users WHERE username=%s AND password=%s"
-        curs.execute(query, (username, password))
-        result = curs.fetchone()
-        return result is not None
-    except err.ProgrammingError as e:
-        print(e)
-        return False
-    finally:
-        curs.close()
-        conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True)
